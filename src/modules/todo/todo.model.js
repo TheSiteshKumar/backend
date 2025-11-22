@@ -12,7 +12,8 @@ const todoSchema = new mongoose.Schema(
             default: true,
         },
     },
-    {  versionKey: false }
+    // { timestamps: true, versionKey: false }
+    { timestamps: true }
 );
 
 const Todo = mongoose.model("Todo", todoSchema);
