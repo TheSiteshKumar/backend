@@ -11,9 +11,19 @@ const todoSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        image: {
+            public_id: String,
+            secure_url: String,
+        },
+        files: [
+            {
+                public_id: String,
+                secure_url: String,
+            },
+        ],
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
-
+            ref: "User",
         },
     },
     // { timestamps: true, versionKey: false }

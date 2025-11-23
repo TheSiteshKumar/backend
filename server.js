@@ -6,7 +6,7 @@ import { connectDB } from "./src/core/config/db.js";
 
 const PORT = process.env.PORT || 5555;
 
-// Connect DB (auto retry logic already inside connectDB)
+// Connect DB
 connectDB();
 
 // Start server
