@@ -10,15 +10,6 @@ export const createTodo = asyncHandler(async (req, res, next) => {
     let image = null;
     let files = [];
 
-
-    //     if(req?.image){
-    //   const file=req.files.rfpDocument;
-    //   const response= await uploadDocumentOnCloudinary(file,"tenders");
-    //   value.rfpDocument={
-    //       url:response.secure_url,
-    //       public_id:response.public_id
-    //   }
-    // }
     // Handle Image Upload
     if (req.files && req.files.image && req.files.image.length > 0) {
         const imgResponse = await uploadToCloudinary(req.files.image[0].path, "todos/images");
