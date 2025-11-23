@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import passport from "./core/config/passport.js"; // Import passport config
 
 import errorHandler from "./core/middlewares/errorHandler.js";
 
 // import Routes
 import todoRoutes from "./modules/todo/todo.route.js";
+import authRoutes from "./modules/auth/auth.routes.js";
 
 
 const app = express();
@@ -15,7 +17,11 @@ app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+// Passport Middleware
+app.use(passport.initialize());
+
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/todo", todoRoutes);
 
 // Health Check
