@@ -4,7 +4,7 @@ import { asyncHandler } from "../../core/middlewares/asyncHandler.js";
 
 const generateToken = (user) => {
     return jwt.sign(
-        { id: user._id, email: user.email },
+        { id: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET || "SuperSecretKey",
         { expiresIn: "1d" }
     );
@@ -26,6 +26,12 @@ export const register = asyncHandler(async (req, res, next) => {
     await newUser.save();
 
     const token = generateToken(newUser);
+
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
 
     return res.status(201).json({
         message: "User registered successfully",
@@ -53,6 +59,12 @@ export const login = asyncHandler(async (req, res, next) => {
 
     const token = generateToken(user);
 
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
     return res.json({
         message: "Login successful",
         token,
@@ -61,7 +73,6 @@ export const login = asyncHandler(async (req, res, next) => {
 });
 
 export const logout = asyncHandler(async (req, res, next) => {
-    // For JWT, logout is client-side (delete token).
-    // We can just return success here.
+    res.clearCookie("token");
     res.json({ message: "Logged out successfully" });
 });

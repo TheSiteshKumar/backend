@@ -1,4 +1,4 @@
-import { createTodo, deleteTodo, getTodo, getTodos, updateTodo } from "./todo.service.js";
+import { createTodo, deleteTodo, getTodo, getTodos, updateTodo, getAllTodosAdmin } from "./todo.service.js";
 import { asyncHandler } from "../../core/middlewares/asyncHandler.js";
 
 export const createTodoController = asyncHandler(async (req, res, next) => {
@@ -20,5 +20,9 @@ export const updateTodoController = asyncHandler(async (req, res, next) => {
 
 export const deleteTodoController = asyncHandler(async (req, res, next) => {
     await deleteTodo(req, res, next);
+});
+
+export const getAllTodosAdminController = asyncHandler(async (req, res, next) => {
+    await getAllTodosAdmin(req, res, next);
 });
 

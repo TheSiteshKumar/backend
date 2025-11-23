@@ -5,7 +5,7 @@ import validate from "./todo.validator.js";
 export const createTodo = asyncHandler(async (req, res, next) => {
     const data = await validate.parseAsync(req.body);
 
-    const todo = await Todo.create(data);
+    const todo = await Todo.create({ ...data, createdBy: req.user.id });
 
     return res.status(201).json({
         success: true,
@@ -25,7 +25,7 @@ export const getTodo = asyncHandler(async (req, res, next) => {
 });
 
 export const getTodos = asyncHandler(async (req, res, next) => {
-    const todos = await Todo.find();
+    const todos = await Todo.find({ createdBy: req.user.id });
     return res.status(200).json({
         success: true,
         data: todos,
@@ -53,6 +53,15 @@ export const deleteTodo = asyncHandler(async (req, res, next) => {
         success: true,
         data: todo,
         message: "Todo deleted successfully",
+    });
+});
+
+export const getAllTodosAdmin = asyncHandler(async (req, res, next) => {
+    const todos = await Todo.find();
+    return res.status(200).json({
+        success: true,
+        data: todos,
+        message: "All todos fetched successfully (Admin)",
     });
 });
 

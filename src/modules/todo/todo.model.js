@@ -11,6 +11,10 @@ const todoSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Auth",
+        },
     },
     // { timestamps: true, versionKey: false }
     { timestamps: true }

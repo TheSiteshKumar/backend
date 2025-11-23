@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import passport from "./core/config/passport.js"; // Import passport config
+import passport from "./core/config/passport.js"; 
 
 import errorHandler from "./core/middlewares/errorHandler.js";
 
