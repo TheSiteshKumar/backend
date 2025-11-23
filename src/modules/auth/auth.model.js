@@ -18,6 +18,18 @@ const authSchema = new mongoose.Schema(
             type: String,
             enum: ["user", "admin", "manager", "superadmin"],
             default: "user",
+        },
+        resetPasswordOTP: {
+            type: String,
+        },
+        resetPasswordOTPExpiry: {
+            type: Date,
+        },
+        resetPasswordToken: {
+            type: String,
+        },
+        resetPasswordTokenExpiry: {
+            type: Date,
         }
     },
     { timestamps: true }
