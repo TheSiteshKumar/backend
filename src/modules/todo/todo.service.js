@@ -1,8 +1,7 @@
 import Todo from "./todo.model.js";
 import { asyncHandler } from "../../core/middlewares/asyncHandler.js";
 import validate from "./todo.validator.js";
-
-import { uploadOnCloudinary, deleteFromCloudinary } from "../../core/utils/upload.js";
+import { uploadToCloudinary, deleteFromCloudinary, updateOnCloudinary } from "../../core/utils/upload.js";
 
 
 export const createTodo = asyncHandler(async (req, res, next) => {
@@ -21,12 +20,12 @@ export const createTodo = asyncHandler(async (req, res, next) => {
     //   }
     // }
     // Handle Image Upload
-    if (req?.files?.image ) {
-        const imgResponse = await uploadOnCloudinary(req.files.image[0].path);
+    if (req.files && req.files.image && req.files.image.length > 0) {
+        const imgResponse = await uploadToCloudinary(req.files.image[0].path, "todos/images");
         if (imgResponse) {
             image = {
                 public_id: imgResponse.public_id,
-                secure_url: imgResponse.secure_url,
+                secure_url: imgResponse.url, // Note: utils return 'url' not 'secure_url'
             };
         }
     }
@@ -34,11 +33,11 @@ export const createTodo = asyncHandler(async (req, res, next) => {
     // Handle Files Upload
     if (req.files && req.files.files && req.files.files.length > 0) {
         for (const file of req.files.files) {
-            const fileResponse = await uploadOnCloudinary(file.path);
+            const fileResponse = await uploadToCloudinary(file.path, "todos/files");
             if (fileResponse) {
                 files.push({
                     public_id: fileResponse.public_id,
-                    secure_url: fileResponse.secure_url,
+                    secure_url: fileResponse.url,
                 });
             }
         }
@@ -83,34 +82,29 @@ export const updateTodo = asyncHandler(async (req, res, next) => {
 
     // Handle Image Replacement
     if (req.files && req.files.image && req.files.image.length > 0) {
-        // Delete old image
-        if (todo.image && todo.image.public_id) {
-            await deleteFromCloudinary(todo.image.public_id);
-        }
-        // Upload new image
-        const imgResponse = await uploadOnCloudinary(req.files.image[0].path);
+        const oldId = todo.image?.public_id;
+        const imgResponse = await updateOnCloudinary(oldId, req.files.image[0].path, "todos/images");
+
         if (imgResponse) {
             data.image = {
                 public_id: imgResponse.public_id,
-                secure_url: imgResponse.secure_url,
+                secure_url: imgResponse.url,
             };
         }
     }
 
-    // Handle Files Update (Replace all strategy for simplicity, or append?)
-    // Let's assume we append new files if uploaded.
+    // Handle Files Update (Append strategy)
     if (req.files && req.files.files && req.files.files.length > 0) {
         const newFiles = [];
         for (const file of req.files.files) {
-            const fileResponse = await uploadOnCloudinary(file.path);
+            const fileResponse = await uploadToCloudinary(file.path, "todos/files");
             if (fileResponse) {
                 newFiles.push({
                     public_id: fileResponse.public_id,
-                    secure_url: fileResponse.secure_url,
+                    secure_url: fileResponse.url,
                 });
             }
         }
-        // Append new files to existing ones
         data.files = [...(todo.files || []), ...newFiles];
     }
 

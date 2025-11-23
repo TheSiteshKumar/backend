@@ -1,44 +1,72 @@
 import multer from "multer";
+import path from "path";
 import fs from "fs";
 import cloudinary from "../config/cloudinary.js";
 
+// Temporary folder
+const tempDir = "public/temp";
+if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+}
+
+// Multer storage (temp only)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "./public/temp");
+        cb(null, tempDir);
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname); // Add timestamp to avoid name conflicts
-    },
+        const ext = path.extname(file.originalname);
+        const fileName = Date.now() + "-" + Math.round(Math.random() * 1e5) + ext;
+        cb(null, fileName);
+    }
 });
 
-export const upload = multer({ storage: storage });
+export const upload = multer({ storage });
 
-export const uploadOnCloudinary = async (localFilePath) => {
+// Upload single file
+export const uploadToCloudinary = async (filePath, folderName) => {
     try {
-        if (!localFilePath) return null;
-        // upload the file on cloudinary
-        const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto",
-            folder: "todo-app",
+        const result = await cloudinary.uploader.upload(filePath, {
+            folder: folderName,
+            resource_type: "auto"
         });
-        // file has been uploaded successfully
-        // console.log("file is uploaded on cloudinary ", response.url);
-        fs.unlinkSync(localFilePath);
-        return response;
+
+        // Try to delete the file, but don't crash if it fails (e.g. already deleted)
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        } catch (unlinkErr) {
+            console.error("Error deleting temp file:", unlinkErr);
+        }
+
+        return {
+            public_id: result.public_id,
+            url: result.secure_url
+        };
     } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
-        fs.unlinkSync(localFilePath); // remove the locally saved temporary file as the upload operation got failed
-        return null;
+        // Ensure cleanup on error
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        } catch (unlinkErr) {
+            console.error("Error deleting temp file after failure:", unlinkErr);
+        }
+        throw error;
     }
 };
 
-export const deleteFromCloudinary = async (publicId) => {
-    try {
-        if (!publicId) return null;
-        const response = await cloudinary.uploader.destroy(publicId);
-        return response;
-    } catch (error) {
-        console.error("Error deleting from cloudinary:", error);
-        return null;
+// Delete file from cloudinary
+export const deleteFromCloudinary = async (public_id) => {
+    if (!public_id) return;
+    return await cloudinary.uploader.destroy(public_id);
+};
+
+// Update file (delete + upload)
+export const updateOnCloudinary = async (oldId, newFilePath, folderName) => {
+    if (oldId) {
+        await deleteFromCloudinary(oldId);
     }
+    return await uploadToCloudinary(newFilePath, folderName);
 };
