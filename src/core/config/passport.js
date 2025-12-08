@@ -4,7 +4,7 @@ import Auth from "../../modules/auth/auth.model.js";
 
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET || "supersecretkey",
+    secretOrKey: process.env.JWT_SECRET || "AaluKaChalu",
 };
 
 passport.use(
